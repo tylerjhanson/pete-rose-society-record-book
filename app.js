@@ -78,7 +78,7 @@
   function resultBadges(entry) {
     const values = [];
     if (entry.finish === "1st") values.push(badge("League champion", "badge-title"));
-    else if (entry.finish === "2nd") values.push(badge("Runner-up", "badge-playoff"));
+    else if (entry.finish === "2nd") values.push(badge("Second place", "badge-playoff"));
     else if (entry.finish === "3rd") values.push(badge("Third place", "badge-playoff"));
     if (entry.regularSeasonChampion) values.push(badge("Regular-season champion", "badge-title"));
     else if (entry.playoffBerth && !entry.finish) values.push(badge("Playoffs", "badge-playoff"));
