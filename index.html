@@ -97,7 +97,20 @@
             <h3 id="timeline-title">Championship timeline</h3>
           </div>
         </div>
-        <div id="championship-timeline" class="timeline"></div>
+        <p class="table-note">Select a column heading to sort the championship history.</p>
+        <div class="table-wrap">
+          <table class="sortable-table">
+            <thead>
+              <tr>
+                <th scope="col" aria-sort="descending"><button class="sort-button is-sorted" type="button" data-champ-sort="yearSort" data-direction="descending">Year</button></th>
+                <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-champ-sort="champion">League champion</button></th>
+                <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-champ-sort="manager">Manager</button></th>
+                <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-champ-sort="regular">Regular-season champion</button></th>
+              </tr>
+            </thead>
+            <tbody id="championship-table-body"></tbody>
+          </table>
+        </div>
       </section>
     </section>
 
@@ -107,43 +120,13 @@
           <p class="eyebrow">Year by year</p>
           <h2 id="seasons-title">Season standings</h2>
         </div>
-        <label class="field-label" for="season-select">
-          Season
-          <select id="season-select"></select>
-        </label>
+        <div class="legend" aria-label="Standings legend">
+          <span><i class="dot dot-gold"></i> Regular-season champion</span>
+          <span><i class="dot dot-red"></i> Playoff berth</span>
+        </div>
       </div>
 
-      <div class="season-summary" id="season-summary"></div>
-
-      <section class="panel" aria-labelledby="selected-season-title">
-        <div class="section-heading compact">
-          <div>
-            <p class="eyebrow">Final results</p>
-            <h3 id="selected-season-title">2026 standings</h3>
-          </div>
-          <div class="legend" aria-label="Standings legend">
-            <span><i class="dot dot-gold"></i> Regular-season champion</span>
-            <span><i class="dot dot-red"></i> Playoff berth</span>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">Franchise</th>
-                <th scope="col" class="num">W</th>
-                <th scope="col" class="num">L</th>
-                <th scope="col" class="num">T</th>
-                <th scope="col" class="num">Pct.</th>
-                <th scope="col" class="num">GB</th>
-                <th scope="col">Result</th>
-              </tr>
-            </thead>
-            <tbody id="season-table-body"></tbody>
-          </table>
-        </div>
-      </section>
+      <div id="all-seasons" class="season-history"></div>
     </section>
 
     <section id="franchises" class="view" aria-labelledby="franchises-title" hidden>
@@ -167,7 +150,33 @@
       </div>
 
       <p id="franchise-result-count" class="result-count"></p>
-      <div id="franchise-grid" class="franchise-grid"></div>
+      <section class="panel franchise-table-panel" aria-label="Franchise standings">
+        <p class="table-note">Sorted by winning percentage. Select any column heading to change the order.</p>
+        <div class="table-wrap">
+          <table class="sortable-table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-franchise-sort="teamName">Franchise</button></th>
+                <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-franchise-sort="manager">Manager</button></th>
+                <th scope="col" class="num" aria-sort="none"><button class="sort-button" type="button" data-franchise-sort="wins">W</button></th>
+                <th scope="col" class="num" aria-sort="none"><button class="sort-button" type="button" data-franchise-sort="losses">L</button></th>
+                <th scope="col" class="num" aria-sort="none"><button class="sort-button" type="button" data-franchise-sort="ties">T</button></th>
+                <th scope="col" class="num" aria-sort="descending"><button class="sort-button is-sorted" type="button" data-franchise-sort="pct" data-direction="descending">Pct.</button></th>
+                <th scope="col" class="num" aria-sort="none"><button class="sort-button" type="button" data-franchise-sort="championshipsCount">Titles</button></th>
+                <th scope="col" class="num" aria-sort="none"><button class="sort-button" type="button" data-franchise-sort="playoffAppearancesCount">Playoffs</button></th>
+                <th scope="col" class="num" aria-sort="none"><button class="sort-button" type="button" data-franchise-sort="activeSeasons">Seasons</button></th>
+              </tr>
+            </thead>
+            <tbody id="franchise-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section id="team" class="view" aria-labelledby="team-page-title" hidden>
+      <a class="back-link" href="#franchises">← All franchises</a>
+      <div id="team-page-content"></div>
     </section>
 
     <section id="records" class="view" aria-labelledby="records-title" hidden>
@@ -223,17 +232,12 @@
     </section>
   </main>
 
-  <dialog id="franchise-dialog" class="franchise-dialog">
-    <button class="dialog-close" type="button" aria-label="Close franchise history">×</button>
-    <div id="franchise-dialog-content"></div>
-  </dialog>
-
   <footer class="site-footer">
     <strong>Pete Rose Society Record Book</strong>
     <span>2020 and 2021 roto seasons excluded.</span>
   </footer>
 
   <script src="data/league-data.js"></script>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
