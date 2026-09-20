@@ -52,9 +52,6 @@
     $("#franchise-count").textContent = meta.franchiseCount;
     $("#active-count").textContent = meta.activeFranchiseCount;
     $("#team-season-count").textContent = data.singleSeasonRecords.length;
-    const champion = displayName(meta.latestChampion);
-    $("#latest-champion").textContent = champion.team;
-    $("#latest-champion-manager").textContent = champion.manager;
   }
 
   function activateView(viewName, updateHash = true) {
