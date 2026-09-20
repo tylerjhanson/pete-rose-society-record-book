@@ -20,17 +20,52 @@
   const formatPct = (value) => Number(value).toFixed(3).replace(/^0/, "");
   const recordText = (entry) => `${entry.wins}-${entry.losses}-${entry.ties}`;
   const byPct = (a, b) => b.pct - a.pct || b.wins - a.wins || a.losses - b.losses || a.name.localeCompare(b.name);
-  const franchiseById = new Map(data.franchises.map((franchise) => [franchise.id, franchise]));
+
+  const knownFranchiseIds = new Set(data.franchises.map((franchise) => franchise.id));
+  const supplementalGroups = new Map();
+  data.singleSeasonRecords.forEach((record) => {
+    if (knownFranchiseIds.has(record.teamId)) return;
+    if (!supplementalGroups.has(record.teamId)) supplementalGroups.set(record.teamId, []);
+    supplementalGroups.get(record.teamId).push(record);
+  });
+  const supplementalFranchises = [...supplementalGroups.entries()].map(([id, seasons]) => {
+    const first = seasons[0];
+    const wins = seasons.reduce((total, entry) => total + entry.wins, 0);
+    const losses = seasons.reduce((total, entry) => total + entry.losses, 0);
+    const ties = seasons.reduce((total, entry) => total + entry.ties, 0);
+    const games = wins + losses + ties;
+    const parts = String(first.team).split(" / ");
+    return {
+      id,
+      name: first.team,
+      teamName: parts[0],
+      manager: parts.slice(1).join(" / ") || "Manager not recorded",
+      active: seasons.some((entry) => entry.active),
+      wins,
+      losses,
+      ties,
+      pct: games ? (wins + ties * 0.5) / games : 0,
+      championshipsCount: seasons.filter((entry) => entry.finish === "1st").length,
+      regularSeasonChampionshipsCount: seasons.filter((entry) => entry.regularSeasonChampion).length,
+      playoffAppearancesCount: seasons.filter((entry) => entry.playoffBerth).length,
+      toiletBowlChampionshipsCount: seasons.filter((entry) => entry.toiletBowlChampion).length,
+      activeSeasons: seasons.length,
+      seasons
+    };
+  });
+  const allTeamPages = [...data.franchises, ...supplementalFranchises];
+  const franchiseById = new Map(allTeamPages.map((franchise) => [franchise.id, franchise]));
+  const franchiseByName = new Map(allTeamPages.map((franchise) => [franchise.name, franchise]));
 
   function displayName(fullName) {
-    const franchise = data.franchises.find((item) => item.name === fullName);
+    const franchise = franchiseByName.get(fullName);
     if (franchise) return { team: franchise.teamName, manager: franchise.manager };
     const parts = String(fullName).split(" / ");
     return { team: parts[0], manager: parts.slice(1).join(" / ") };
   }
 
   function teamPageLink(fullName, className = "team-name") {
-    const franchise = data.franchises.find((item) => item.name === fullName);
+    const franchise = franchiseByName.get(fullName);
     const name = displayName(fullName);
     if (!franchise) return `<span class="${className}">${escapeHtml(name.team)}</span>`;
     return `<a class="${className} table-link" href="#team/${encodeURIComponent(franchise.id)}">${escapeHtml(name.team)}</a>`;
