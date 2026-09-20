@@ -29,6 +29,13 @@
     return { team: parts[0], manager: parts.slice(1).join(" / ") };
   }
 
+  function teamPageLink(fullName, className = "team-name") {
+    const franchise = data.franchises.find((item) => item.name === fullName);
+    const name = displayName(fullName);
+    if (!franchise) return `<span class="${className}">${escapeHtml(name.team)}</span>`;
+    return `<a class="${className} table-link" href="#team/${encodeURIComponent(franchise.id)}">${escapeHtml(name.team)}</a>`;
+  }
+
   function badge(label, className = "") {
     return `<span class="badge ${className}">${escapeHtml(label)}</span>`;
   }
@@ -82,7 +89,7 @@
       <tr>
         <td>${index + 1}</td>
         <td class="team-cell">
-          <span class="team-name">${escapeHtml(franchise.teamName)}</span>
+          <a class="team-name table-link" href="#team/${encodeURIComponent(franchise.id)}">${escapeHtml(franchise.teamName)}</a>
           <span class="manager-name">${escapeHtml(franchise.manager)}${franchise.active ? "" : " · inactive"}</span>
         </td>
         <td class="num">${franchise.wins}</td>
@@ -102,185 +109,276 @@
     });
   });
 
-  function renderTimeline() {
-    const items = [];
-    data.seasons.forEach((season) => {
-      if (season.year === 2022) {
-        items.push(`
-          <article class="timeline-card excluded">
-            <strong>2020–2021</strong>
-            <span>Roto seasons excluded</span>
-          </article>
-        `);
-      }
+  function compareSortValues(a, b) {
+    if (typeof a === "number" && typeof b === "number") return a - b;
+    return String(a ?? "").localeCompare(String(b ?? ""), undefined, { numeric: true, sensitivity: "base" });
+  }
+
+  function updateSortHeaders(selector, key, direction) {
+    $$(selector).forEach((button) => {
+      const selected = button.dataset.champSort === key || button.dataset.franchiseSort === key;
+      const th = button.closest("th");
+      button.classList.toggle("is-sorted", selected);
+      button.dataset.direction = selected ? (direction === "asc" ? "ascending" : "descending") : "";
+      th.setAttribute("aria-sort", selected ? button.dataset.direction : "none");
+    });
+  }
+
+  let championshipSort = { key: "yearSort", direction: "desc" };
+
+  function renderChampionshipTable() {
+    const rows = data.seasons.map((season) => {
       const champion = season.standings.find((entry) => entry.finish === "1st");
       const regular = season.standings.filter((entry) => entry.regularSeasonChampion);
       const championName = champion ? displayName(champion.team) : { team: "Not recorded", manager: "" };
-      items.push(`
-        <article class="timeline-card">
-          <div class="timeline-year">${season.year}</div>
-          <div class="timeline-title">${escapeHtml(championName.team)}</div>
-          <div class="timeline-manager">${escapeHtml(championName.manager)}</div>
-          <div class="timeline-detail">Regular season: ${regular.map((entry) => escapeHtml(displayName(entry.team).team)).join(" / ") || "Not recorded"}</div>
-        </article>
-      `);
+      const regularNames = regular.map((entry) => displayName(entry.team).team).join(" / ") || "Not recorded";
+      return {
+        year: String(season.year),
+        yearSort: season.year,
+        champion: championName.team,
+        championTeam: champion ? champion.team : "",
+        manager: championName.manager || "—",
+        regular: regularNames,
+        regularTeams: regular.map((entry) => entry.team),
+        excluded: false
+      };
     });
-    $("#championship-timeline").innerHTML = items.join("");
+    rows.push({
+      year: "2020–2021",
+      yearSort: 2020.5,
+      champion: "Excluded roto seasons",
+      manager: "—",
+      regular: "Not counted",
+      regularTeams: [],
+      championTeam: "",
+      excluded: true
+    });
+    const direction = championshipSort.direction === "asc" ? 1 : -1;
+    rows.sort((a, b) =>
+      compareSortValues(a[championshipSort.key], b[championshipSort.key]) * direction
+      || compareSortValues(a.yearSort, b.yearSort) * -1
+    );
+    $("#championship-table-body").innerHTML = rows.map((row) => `
+      <tr class="${row.excluded ? "excluded-row" : ""}">
+        <td><strong>${escapeHtml(row.year)}</strong></td>
+        <td class="team-cell">${row.excluded ? `<span class="team-name">${escapeHtml(row.champion)}</span>` : teamPageLink(row.championTeam)}</td>
+        <td>${escapeHtml(row.manager)}</td>
+        <td>${row.excluded ? escapeHtml(row.regular) : row.regularTeams.map((team) => teamPageLink(team, "inline-team-link")).join(" / ")}</td>
+      </tr>
+    `).join("");
+    updateSortHeaders("[data-champ-sort]", championshipSort.key, championshipSort.direction);
   }
 
-  const seasonSelect = $("#season-select");
-  data.seasons.slice().reverse().forEach((season) => {
-    const option = document.createElement("option");
-    option.value = season.year;
-    option.textContent = season.year;
-    seasonSelect.append(option);
+  $$("[data-champ-sort]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const key = button.dataset.champSort;
+      championshipSort = championshipSort.key === key
+        ? { key, direction: championshipSort.direction === "asc" ? "desc" : "asc" }
+        : { key, direction: key === "yearSort" ? "desc" : "asc" };
+      renderChampionshipTable();
+    });
   });
 
-  function summaryCard(label, entry, fallback = "Not recorded") {
-    if (!entry) return `<article class="summary-card"><span class="summary-label">${label}</span><strong>${fallback}</strong></article>`;
-    const name = displayName(entry.team);
-    return `
-      <article class="summary-card">
-        <span class="summary-label">${escapeHtml(label)}</span>
-        <strong>${escapeHtml(name.team)}</strong>
-        <small>${escapeHtml(name.manager)}</small>
-      </article>
-    `;
-  }
+  function renderAllSeasons() {
+    $("#all-seasons").innerHTML = data.seasons.slice().reverse().map((season) => {
+      const champion = season.standings.find((entry) => entry.finish === "1st");
+      const regularChampions = season.standings.filter((entry) => entry.regularSeasonChampion);
+      const toilet = season.standings.find((entry) => entry.toiletBowlChampion);
+      const championName = champion ? displayName(champion.team).team : "Not recorded";
+      const regularNames = regularChampions.map((entry) => displayName(entry.team).team).join(" / ") || "Not recorded";
+      const toiletName = toilet ? displayName(toilet.team).team : "Not recorded";
 
-  function renderSeason(year) {
-    const season = data.seasons.find((item) => item.year === Number(year)) || data.seasons.at(-1);
-    seasonSelect.value = season.year;
-    $("#selected-season-title").textContent = `${season.year} standings`;
-    const champion = season.standings.find((entry) => entry.finish === "1st");
-    const regularChampions = season.standings.filter((entry) => entry.regularSeasonChampion);
-    const toilet = season.standings.find((entry) => entry.toiletBowlChampion);
-    const regularSummary = regularChampions.length === 1
-      ? summaryCard("Regular-season champion", regularChampions[0])
-      : `<article class="summary-card"><span class="summary-label">Regular-season champions</span><strong>${regularChampions.map((entry) => escapeHtml(displayName(entry.team).team)).join(" / ")}</strong><small>Tied for the regular-season title</small></article>`;
-    $("#season-summary").innerHTML = [
-      summaryCard("League champion", champion),
-      regularSummary,
-      summaryCard("Toilet Bowl champion", toilet)
-    ].join("");
+      const rows = season.standings.map((entry) => {
+        const name = displayName(entry.team);
+        const rowClass = entry.regularSeasonChampion ? "row-regular-champ" : entry.playoffBerth ? "row-playoff" : "";
+        return `
+          <tr class="${rowClass}">
+            <td>${entry.rank}</td>
+            <td class="team-cell">
+              ${teamPageLink(entry.team)}
+              <span class="manager-name">${escapeHtml(name.manager)}${entry.active ? "" : " · inactive"}</span>
+            </td>
+            <td class="num">${entry.wins}</td>
+            <td class="num">${entry.losses}</td>
+            <td class="num">${entry.ties}</td>
+            <td class="num"><strong>${formatPct(entry.pct)}</strong></td>
+            <td class="num">${escapeHtml(entry.gamesBack === "0" ? "—" : entry.gamesBack)}</td>
+            <td>${resultBadges(entry)}</td>
+          </tr>
+        `;
+      }).join("");
 
-    $("#season-table-body").innerHTML = season.standings.map((entry) => {
-      const name = displayName(entry.team);
-      const rowClass = entry.regularSeasonChampion ? "row-regular-champ" : entry.playoffBerth ? "row-playoff" : "";
       return `
-        <tr class="${rowClass}">
-          <td>${entry.rank}</td>
-          <td class="team-cell">
-            <span class="team-name">${escapeHtml(name.team)}</span>
-            <span class="manager-name">${escapeHtml(name.manager)}${entry.active ? "" : " · inactive"}</span>
-          </td>
-          <td class="num">${entry.wins}</td>
-          <td class="num">${entry.losses}</td>
-          <td class="num">${entry.ties}</td>
-          <td class="num"><strong>${formatPct(entry.pct)}</strong></td>
-          <td class="num">${escapeHtml(entry.gamesBack === "0" ? "—" : entry.gamesBack)}</td>
-          <td>${resultBadges(entry)}</td>
-        </tr>
+        <section class="panel season-panel" aria-labelledby="season-${season.year}-title">
+          <div class="section-heading compact season-panel-heading">
+            <div>
+              <p class="eyebrow">Final results</p>
+              <h3 id="season-${season.year}-title">${season.year} standings</h3>
+            </div>
+            <div class="season-highlights">
+              <span><small>League champion</small><strong>${champion ? teamPageLink(champion.team, "inline-team-link") : escapeHtml(championName)}</strong></span>
+              <span><small>Regular season</small><strong>${regularChampions.length ? regularChampions.map((entry) => teamPageLink(entry.team, "inline-team-link")).join(" / ") : escapeHtml(regularNames)}</strong></span>
+              <span><small>Toilet Bowl</small><strong>${toilet ? teamPageLink(toilet.team, "inline-team-link") : escapeHtml(toiletName)}</strong></span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Franchise</th>
+                  <th scope="col" class="num">W</th>
+                  <th scope="col" class="num">L</th>
+                  <th scope="col" class="num">T</th>
+                  <th scope="col" class="num">Pct.</th>
+                  <th scope="col" class="num">GB</th>
+                  <th scope="col">Result</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </section>
       `;
     }).join("");
   }
 
-  seasonSelect.addEventListener("change", () => renderSeason(seasonSelect.value));
-
   let franchiseFilter = "all";
+  let franchiseSort = { key: "pct", direction: "desc" };
   const franchiseSearch = $("#franchise-search");
 
   function renderFranchises() {
     const query = franchiseSearch.value.trim().toLowerCase();
+    const direction = franchiseSort.direction === "asc" ? 1 : -1;
     const franchises = data.franchises
       .filter((franchise) => {
         const matchesStatus = franchiseFilter === "all" || (franchiseFilter === "active" ? franchise.active : !franchise.active);
-        const matchesSearch = !query || franchise.name.toLowerCase().includes(query);
+        const searchText = `${franchise.teamName} ${franchise.manager}`.toLowerCase();
+        const matchesSearch = !query || searchText.includes(query);
         return matchesStatus && matchesSearch;
       })
-      .sort((a, b) => Number(b.active) - Number(a.active) || byPct(a, b));
+      .sort((a, b) =>
+        compareSortValues(a[franchiseSort.key], b[franchiseSort.key]) * direction
+        || byPct(a, b)
+      );
 
     $("#franchise-result-count").textContent = `${franchises.length} franchise${franchises.length === 1 ? "" : "s"}`;
-    $("#franchise-grid").innerHTML = franchises.length ? franchises.map((franchise) => `
-      <button class="franchise-card ${franchise.active ? "" : "inactive"}" type="button" data-franchise-id="${escapeHtml(franchise.id)}">
-        <h3>${escapeHtml(franchise.teamName)}</h3>
-        <p class="manager">${escapeHtml(franchise.manager)}${franchise.active ? "" : " · inactive"}</p>
-        <div class="franchise-record">
-          <strong>${franchise.wins}-${franchise.losses}-${franchise.ties}</strong>
-          <span>${formatPct(franchise.pct)}</span>
-        </div>
-        <div class="franchise-meta">
-          ${badge(`${franchise.championshipsCount} title${franchise.championshipsCount === 1 ? "" : "s"}`, franchise.championshipsCount ? "badge-title" : "")}
-          ${badge(`${franchise.playoffAppearancesCount} playoff berth${franchise.playoffAppearancesCount === 1 ? "" : "s"}`)}
-          ${badge(`${franchise.activeSeasons} season${franchise.activeSeasons === 1 ? "" : "s"}`)}
-        </div>
-      </button>
-    `).join("") : `<div class="empty-state">No franchises match this search.</div>`;
+    $("#franchise-table-body").innerHTML = franchises.length ? franchises.map((franchise, index) => `
+      <tr class="${franchise.active ? "" : "franchise-row-inactive"}">
+        <td>${index + 1}</td>
+        <td class="team-cell">
+          <a class="table-link" href="#team/${encodeURIComponent(franchise.id)}">${escapeHtml(franchise.teamName)}</a>
+          ${franchise.active ? "" : '<span class="manager-name">Inactive</span>'}
+        </td>
+        <td>${escapeHtml(franchise.manager)}</td>
+        <td class="num">${franchise.wins}</td>
+        <td class="num">${franchise.losses}</td>
+        <td class="num">${franchise.ties}</td>
+        <td class="num"><strong>${formatPct(franchise.pct)}</strong></td>
+        <td class="num">${franchise.championshipsCount}</td>
+        <td class="num">${franchise.playoffAppearancesCount}</td>
+        <td class="num">${franchise.activeSeasons}</td>
+      </tr>
+    `).join("") : '<tr><td colspan="10" class="empty-state">No franchises match this search.</td></tr>';
+    updateSortHeaders("[data-franchise-sort]", franchiseSort.key, franchiseSort.direction);
   }
 
   franchiseSearch.addEventListener("input", renderFranchises);
-  $$('[data-franchise-filter]').forEach((button) => {
+  $$("[data-franchise-filter]").forEach((button) => {
     button.addEventListener("click", () => {
       franchiseFilter = button.dataset.franchiseFilter;
-      $$('[data-franchise-filter]').forEach((item) => item.classList.toggle("is-active", item === button));
+      $$("[data-franchise-filter]").forEach((item) => item.classList.toggle("is-active", item === button));
       renderFranchises();
     });
   });
 
-  const dialog = $("#franchise-dialog");
-  const dialogContent = $("#franchise-dialog-content");
+  $$("[data-franchise-sort]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const key = button.dataset.franchiseSort;
+      const numericKeys = ["wins", "losses", "ties", "pct", "championshipsCount", "playoffAppearancesCount", "activeSeasons"];
+      franchiseSort = franchiseSort.key === key
+        ? { key, direction: franchiseSort.direction === "asc" ? "desc" : "asc" }
+        : { key, direction: numericKeys.includes(key) ? "desc" : "asc" };
+      renderFranchises();
+    });
+  });
 
-  function openFranchise(franchise) {
-    const yearly = franchise.seasons.slice().reverse();
-    dialogContent.innerHTML = `
-      <div class="dialog-inner">
-        <div class="dialog-header">
+  function renderTeamPage(franchise) {
+    const yearly = franchise.seasons.slice().sort((a, b) => b.year - a.year);
+    $("#team-page-content").innerHTML = `
+      <div class="page-heading team-page-heading">
+        <div>
           <p class="eyebrow">${franchise.active ? "Active franchise" : "Inactive franchise"}</p>
-          <h2 class="dialog-title">${escapeHtml(franchise.teamName)}</h2>
-          <p class="dialog-manager">${escapeHtml(franchise.manager)}</p>
+          <h2 id="team-page-title">${escapeHtml(franchise.teamName)}</h2>
+          <p class="team-page-manager">${escapeHtml(franchise.manager)}</p>
         </div>
-        <div class="dialog-stats">
-          <div class="dialog-stat"><strong>${recordText(franchise)}</strong><span>All-time record</span></div>
-          <div class="dialog-stat"><strong>${formatPct(franchise.pct)}</strong><span>Winning percentage</span></div>
-          <div class="dialog-stat"><strong>${franchise.championshipsCount}</strong><span>League titles</span></div>
-          <div class="dialog-stat"><strong>${franchise.playoffAppearancesCount}</strong><span>Playoff berths</span></div>
+      </div>
+
+      <div class="team-page-stats">
+        <article class="stat-card"><span class="stat-value">${recordText(franchise)}</span><span class="stat-label">All-time record</span></article>
+        <article class="stat-card"><span class="stat-value">${formatPct(franchise.pct)}</span><span class="stat-label">Winning percentage</span></article>
+        <article class="stat-card"><span class="stat-value">${franchise.championshipsCount}</span><span class="stat-label">League titles</span></article>
+        <article class="stat-card"><span class="stat-value">${franchise.playoffAppearancesCount}</span><span class="stat-label">Playoff berths</span></article>
+      </div>
+
+      <section class="panel" aria-label="${escapeHtml(franchise.teamName)} season results">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Season by season</p>
+            <h3>Results history</h3>
+          </div>
+          <span class="result-count">${franchise.activeSeasons} season${franchise.activeSeasons === 1 ? "" : "s"}</span>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Year</th><th class="num">W</th><th class="num">L</th><th class="num">T</th><th class="num">Pct.</th><th>Result</th></tr>
+              <tr>
+                <th scope="col">Year</th>
+                <th scope="col" class="num">Finish</th>
+                <th scope="col" class="num">W</th>
+                <th scope="col" class="num">L</th>
+                <th scope="col" class="num">T</th>
+                <th scope="col" class="num">Pct.</th>
+                <th scope="col" class="num">GB</th>
+                <th scope="col">Result</th>
+              </tr>
             </thead>
             <tbody>
               ${yearly.map((entry) => `
-                <tr>
+                <tr class="${entry.regularSeasonChampion ? "row-regular-champ" : entry.playoffBerth ? "row-playoff" : ""}">
                   <td><strong>${entry.year}</strong></td>
+                  <td class="num">${entry.rank}</td>
                   <td class="num">${entry.wins}</td>
                   <td class="num">${entry.losses}</td>
                   <td class="num">${entry.ties}</td>
-                  <td class="num">${formatPct(entry.pct)}</td>
+                  <td class="num"><strong>${formatPct(entry.pct)}</strong></td>
+                  <td class="num">${escapeHtml(entry.gamesBack === "0" ? "—" : entry.gamesBack)}</td>
                   <td>${resultBadges(entry)}</td>
                 </tr>
               `).join("")}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     `;
-    if (typeof dialog.showModal === "function") dialog.showModal();
-    else dialog.setAttribute("open", "");
   }
 
-  $("#franchise-grid").addEventListener("click", (event) => {
-    const card = event.target.closest("[data-franchise-id]");
-    if (!card) return;
-    const franchise = franchiseById.get(card.dataset.franchiseId);
-    if (franchise) openFranchise(franchise);
-  });
+  function routeFromHash() {
+    const route = location.hash.replace(/^#/, "");
+    if (route.startsWith("team/")) {
+      const id = decodeURIComponent(route.slice(5));
+      const franchise = franchiseById.get(id);
+      if (franchise) {
+        renderTeamPage(franchise);
+        activateView("team", false);
+        return;
+      }
+    }
+    const view = ["overview", "seasons", "franchises", "records"].includes(route) ? route : "overview";
+    activateView(view, false);
+  }
 
-  $(".dialog-close").addEventListener("click", () => dialog.close());
-  dialog.addEventListener("click", (event) => {
-    if (event.target === dialog) dialog.close();
-  });
+  window.addEventListener("hashchange", routeFromHash);
 
   let recordLimit = 50;
   const recordSearch = $("#record-search");
@@ -307,7 +405,7 @@
           <td><strong>${record.rank}</strong></td>
           <td>${record.year}</td>
           <td class="team-cell">
-            <span class="team-name">${escapeHtml(name.team)}</span>
+            ${teamPageLink(record.team)}
             <span class="manager-name">${escapeHtml(name.manager)}${record.active ? "" : " · inactive"}</span>
           </td>
           <td class="num">${record.wins}</td>
@@ -335,11 +433,10 @@
 
   setStaticSummary();
   renderLeaderTable();
-  renderTimeline();
-  renderSeason(data.meta.endYear);
+  renderChampionshipTable();
+  renderAllSeasons();
   renderFranchises();
   renderRecords();
 
-  const initialView = location.hash.replace("#", "");
-  activateView(["overview", "seasons", "franchises", "records"].includes(initialView) ? initialView : "overview", false);
+  routeFromHash();
 })();
