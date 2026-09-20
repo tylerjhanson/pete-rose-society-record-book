@@ -529,3 +529,125 @@ input:focus, select:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgb
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
 }
+
+
+/* Sortable history tables and full season archive */
+.sort-button {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: inherit;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.num .sort-button { justify-content: flex-end; }
+.sort-button::after { color: #89939c; content: "↕"; font-size: .9rem; }
+.sort-button.is-sorted[data-direction="ascending"]::after { color: var(--red); content: "↑"; }
+.sort-button.is-sorted[data-direction="descending"]::after { color: var(--red); content: "↓"; }
+.sort-button:focus-visible { border-radius: 3px; outline: 2px solid var(--red); outline-offset: 3px; }
+
+.excluded-row td {
+  color: var(--muted);
+  background: repeating-linear-gradient(135deg, #f5f2eb 0 8px, #eee9df 8px 16px);
+}
+
+.season-history { display: grid; gap: 24px; }
+.season-panel { margin-top: 0; }
+.season-panel-heading { margin-bottom: 18px; }
+.season-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.season-highlights span {
+  min-width: 135px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #faf7f0;
+}
+.season-highlights small {
+  display: block;
+  color: var(--muted);
+  font-size: .64rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.season-highlights strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--navy);
+  font-size: .8rem;
+  line-height: 1.25;
+}
+
+.franchise-table-panel { margin-top: 14px; }
+.table-link {
+  padding: 0;
+  border: 0;
+  color: var(--navy);
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(16,42,67,.28);
+  text-underline-offset: 3px;
+}
+.table-link:hover { color: var(--red); text-decoration-color: currentColor; }
+.table-link:focus-visible { border-radius: 3px; outline: 2px solid var(--red); outline-offset: 3px; }
+.franchise-row-inactive { color: #626a70; }
+
+@media (max-width: 680px) {
+  .season-panel-heading { align-items: stretch; }
+  .season-highlights { display: grid; grid-template-columns: 1fr; width: 100%; }
+}
+
+
+/* Dedicated franchise pages */
+.inline-team-link {
+  display: inline;
+  color: var(--navy);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: rgba(16,42,67,.28);
+  text-underline-offset: 3px;
+}
+.inline-team-link:hover { color: var(--red); text-decoration-color: currentColor; }
+.back-link {
+  display: inline-flex;
+  margin: 2px 0 18px;
+  color: var(--navy);
+  font-size: .85rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.back-link:hover { color: var(--red); }
+.team-page-heading { margin-bottom: 18px; }
+.team-page-manager { margin: 6px 0 0; color: var(--muted); font-size: 1rem; }
+.team-page-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.team-page-stats .stat-value { font-size: clamp(1.45rem, 3vw, 2.2rem); }
+
+@media (max-width: 900px) {
+  .team-page-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 520px) {
+  .team-page-stats { grid-template-columns: 1fr; }
+}
