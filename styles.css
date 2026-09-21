@@ -663,3 +663,50 @@ input:focus, select:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgb
   outline: 3px solid var(--gold);
   outline-offset: -3px;
 }
+
+/* Phone layouts: preserve all columns as labeled, compact row cards. */
+@media (max-width: 600px) {
+  .main-shell, .panel, .table-wrap { min-width: 0; }
+  .mobile-cards, .mobile-cards tbody { display: block; width: 100%; }
+  .mobile-cards thead {
+    position: absolute; width: 1px; height: 1px; padding: 0;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .mobile-cards.sortable-table thead {
+    position: static; display: block; width: auto; height: auto;
+    overflow: visible; clip-path: none; white-space: normal; margin-bottom: 12px;
+  }
+  .mobile-cards.sortable-table thead tr { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mobile-cards.sortable-table th { padding: 0; border: 0; background: transparent; }
+  .mobile-cards.sortable-table th:not(:has(button)) { display: none; }
+  .mobile-cards .sort-button {
+    min-height: 44px; width: auto; padding: 7px 10px;
+    border: 1px solid var(--line); border-radius: 8px; background: #f3efe7;
+    white-space: normal; text-align: left; font-size: .7rem;
+  }
+  .mobile-cards .sort-button.is-sorted { background: var(--navy); color: white; }
+  .mobile-cards .sort-button.is-sorted::after { color: var(--gold); }
+  .mobile-cards tbody tr {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px 6px; margin: 10px 0; padding: 12px;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+  }
+  .mobile-cards tbody td {
+    display: block; min-width: 0; padding: 0; border: 0;
+    white-space: normal; text-align: left; overflow-wrap: anywhere;
+    font-size: .88rem; box-shadow: none !important;
+  }
+  .mobile-cards tbody td::before {
+    content: attr(data-label); display: block; margin-bottom: 3px;
+    color: var(--muted); font-size: .62rem; font-weight: 700;
+    letter-spacing: .025em; text-transform: uppercase;
+  }
+  .mobile-cards tbody td.mobile-wide { grid-column: 1 / -1; }
+  .mobile-cards tbody td.team-cell { min-width: 0; }
+  .mobile-cards .team-name, .mobile-cards .table-link { line-height: 1.35; }
+  .mobile-cards .badge { white-space: normal; margin: 2px 2px 2px 0; }
+  .mobile-cards tbody tr.row-regular-champ { border-left: 4px solid var(--gold); }
+  .mobile-cards tbody tr.row-playoff { border-left: 4px solid var(--red); }
+  .mobile-cards tbody tr.excluded-row { background: #f3efe7; }
+  .mobile-cards .excluded-row td { background: transparent; }
+}
