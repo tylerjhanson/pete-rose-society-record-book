@@ -301,10 +301,9 @@
       <tr class="${franchise.active ? "" : "franchise-row-inactive"}">
         <td>${index + 1}</td>
         <td class="team-cell">
-          <a class="table-link" href="#team/${encodeURIComponent(franchise.id)}">${escapeHtml(franchise.teamName)}</a>
-          ${franchise.active ? "" : '<span class="manager-name">Inactive</span>'}
+          <a class="team-name table-link" href="#team/${encodeURIComponent(franchise.id)}">${escapeHtml(franchise.teamName)}</a>
+          <span class="manager-name">${escapeHtml(franchise.manager)}${franchise.active ? "" : " · inactive"}</span>
         </td>
-        <td>${escapeHtml(franchise.manager)}</td>
         <td class="num">${franchise.wins}</td>
         <td class="num">${franchise.losses}</td>
         <td class="num">${franchise.ties}</td>
@@ -313,7 +312,7 @@
         <td class="num">${franchise.playoffAppearancesCount}</td>
         <td class="num">${franchise.activeSeasons}</td>
       </tr>
-    `).join("") : '<tr><td colspan="10" class="empty-state">No franchises match this search.</td></tr>';
+    `).join("") : '<tr><td colspan="9" class="empty-state">No franchises match this search.</td></tr>';
     updateSortHeaders("[data-franchise-sort]", franchiseSort.key, franchiseSort.direction);
   }
 
