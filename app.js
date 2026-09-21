@@ -87,20 +87,6 @@
   }
 
 
-  function labelMobileTables(root) {
-    root.querySelectorAll("table").forEach((table) => {
-      table.classList.add("mobile-cards");
-      const headings = [...table.querySelectorAll("thead th")].map(th => th.textContent.trim());
-      table.querySelectorAll("tbody tr").forEach((row) => {
-        [...row.cells].forEach((cell, index) => {
-          const label = headings[index] || "";
-          cell.dataset.label = label === "#" ? "Rank" : label;
-          cell.classList.toggle("mobile-wide", ["Franchise", "Manager", "Result", "League champion", "Regular-season champion"].includes(label) || cell.colSpan > 1);
-        });
-      });
-    });
-  }
-
   function setStaticSummary() {
     const meta = data.meta;
     $("#season-range").textContent = `${meta.startYear}–${meta.endYear}`;
@@ -151,7 +137,6 @@
         <td class="num">${franchise.activeSeasons}</td>
       </tr>
     `).join("");
-    labelMobileTables($("#overview"));
   }
 
   $$('[data-leader-filter]').forEach((button) => {
@@ -216,7 +201,6 @@
       </tr>
     `).join("");
     updateSortHeaders("[data-champ-sort]", championshipSort.key, championshipSort.direction);
-    labelMobileTables($("#overview"));
   }
 
   $$("[data-champ-sort]").forEach((button) => {
@@ -291,7 +275,6 @@
         </section>
       `;
     }).join("");
-    labelMobileTables($("#all-seasons"));
   }
 
   let franchiseFilter = "all";
@@ -332,7 +315,6 @@
       </tr>
     `).join("") : '<tr><td colspan="10" class="empty-state">No franchises match this search.</td></tr>';
     updateSortHeaders("[data-franchise-sort]", franchiseSort.key, franchiseSort.direction);
-    labelMobileTables($("#franchises"));
   }
 
   franchiseSearch.addEventListener("input", renderFranchises);
@@ -413,7 +395,6 @@
         </div>
       </section>
     `;
-    labelMobileTables($("#team-page-content"));
   }
 
   function routeFromHash() {
@@ -467,7 +448,6 @@
         </tr>
       `;
     }).join("") || `<tr><td colspan="8" class="empty-state">No records match this search.</td></tr>`;
-    labelMobileTables($("#records"));
   }
 
   [recordSearch, recordStatus].forEach((control) => {
