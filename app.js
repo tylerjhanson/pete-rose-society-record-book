@@ -18,7 +18,8 @@
   })[character]);
 
   const formatPct = (value) => Number(value).toFixed(3).replace(/^0/, "");
-  const recordText = (entry) => `${entry.wins}-${entry.losses}-${entry.ties}`;
+  const formatNumber = (value) => Number(value).toLocaleString("en-US");
+  const recordText = (entry) => `${formatNumber(entry.wins)}-${formatNumber(entry.losses)}-${formatNumber(entry.ties)}`;
   const byPct = (a, b) => b.pct - a.pct || b.wins - a.wins || a.losses - b.losses || a.name.localeCompare(b.name);
 
   const knownFranchiseIds = new Set(data.franchises.map((franchise) => franchise.id));
@@ -128,9 +129,9 @@
           <a class="team-name table-link" href="#team/${encodeURIComponent(franchise.id)}">${escapeHtml(franchise.teamName)}</a>
           <span class="manager-name">${escapeHtml(franchise.manager)}${franchise.active ? "" : " · inactive"}</span>
         </td>
-        <td class="num">${franchise.wins}</td>
-        <td class="num">${franchise.losses}</td>
-        <td class="num">${franchise.ties}</td>
+        <td class="num">${formatNumber(franchise.wins)}</td>
+        <td class="num">${formatNumber(franchise.losses)}</td>
+        <td class="num">${formatNumber(franchise.ties)}</td>
         <td class="num"><strong>${formatPct(franchise.pct)}</strong></td>
         <td class="num">${franchise.championshipsCount}</td>
         <td class="num">${franchise.playoffAppearancesCount}</td>
@@ -232,9 +233,9 @@
               ${teamPageLink(entry.team)}
               <span class="manager-name">${escapeHtml(name.manager)}${entry.active ? "" : " · inactive"}</span>
             </td>
-            <td class="num">${entry.wins}</td>
-            <td class="num">${entry.losses}</td>
-            <td class="num">${entry.ties}</td>
+            <td class="num">${formatNumber(entry.wins)}</td>
+            <td class="num">${formatNumber(entry.losses)}</td>
+            <td class="num">${formatNumber(entry.ties)}</td>
             <td class="num"><strong>${formatPct(entry.pct)}</strong></td>
             <td class="num">${escapeHtml(entry.gamesBack === "0" ? "—" : entry.gamesBack)}</td>
             <td>${resultBadges(entry)}</td>
@@ -304,9 +305,9 @@
           <a class="team-name table-link" href="#team/${encodeURIComponent(franchise.id)}">${escapeHtml(franchise.teamName)}</a>
           <span class="manager-name">${escapeHtml(franchise.manager)}${franchise.active ? "" : " · inactive"}</span>
         </td>
-        <td class="num">${franchise.wins}</td>
-        <td class="num">${franchise.losses}</td>
-        <td class="num">${franchise.ties}</td>
+        <td class="num">${formatNumber(franchise.wins)}</td>
+        <td class="num">${formatNumber(franchise.losses)}</td>
+        <td class="num">${formatNumber(franchise.ties)}</td>
         <td class="num"><strong>${formatPct(franchise.pct)}</strong></td>
         <td class="num">${franchise.championshipsCount}</td>
         <td class="num">${franchise.playoffAppearancesCount}</td>
@@ -381,9 +382,9 @@
                 <tr class="${entry.regularSeasonChampion ? "row-regular-champ" : entry.playoffBerth ? "row-playoff" : ""}">
                   <td><strong>${entry.year}</strong></td>
                   <td class="num">${entry.rank}</td>
-                  <td class="num">${entry.wins}</td>
-                  <td class="num">${entry.losses}</td>
-                  <td class="num">${entry.ties}</td>
+                  <td class="num">${formatNumber(entry.wins)}</td>
+                  <td class="num">${formatNumber(entry.losses)}</td>
+                  <td class="num">${formatNumber(entry.ties)}</td>
                   <td class="num"><strong>${formatPct(entry.pct)}</strong></td>
                   <td class="num">${escapeHtml(entry.gamesBack === "0" ? "—" : entry.gamesBack)}</td>
                   <td>${resultBadges(entry)}</td>
@@ -439,9 +440,9 @@
             ${teamPageLink(record.team)}
             <span class="manager-name">${escapeHtml(name.manager)}${record.active ? "" : " · inactive"}</span>
           </td>
-          <td class="num">${record.wins}</td>
-          <td class="num">${record.losses}</td>
-          <td class="num">${record.ties}</td>
+          <td class="num">${formatNumber(record.wins)}</td>
+          <td class="num">${formatNumber(record.losses)}</td>
+          <td class="num">${formatNumber(record.ties)}</td>
           <td class="num"><strong>${formatPct(record.pct)}</strong></td>
           <td>${resultBadges(record)}</td>
         </tr>
