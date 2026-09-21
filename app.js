@@ -133,6 +133,7 @@
         <td class="num"><strong>${formatPct(franchise.pct)}</strong></td>
         <td class="num">${franchise.championshipsCount}</td>
         <td class="num">${franchise.playoffAppearancesCount}</td>
+        <td class="num">${franchise.activeSeasons}</td>
       </tr>
     `).join("");
   }
@@ -172,7 +173,6 @@
         yearSort: season.year,
         champion: championName.team,
         championTeam: champion ? champion.team : "",
-        manager: championName.manager || "—",
         regular: regularNames,
         regularTeams: regular.map((entry) => entry.team),
         excluded: false
@@ -182,7 +182,6 @@
       year: "2020–2021",
       yearSort: 2020.5,
       champion: "Excluded roto seasons",
-      manager: "—",
       regular: "Not counted",
       regularTeams: [],
       championTeam: "",
@@ -197,7 +196,6 @@
       <tr class="${row.excluded ? "excluded-row" : ""}">
         <td><strong>${escapeHtml(row.year)}</strong></td>
         <td class="team-cell">${row.excluded ? `<span class="team-name">${escapeHtml(row.champion)}</span>` : teamPageLink(row.championTeam)}</td>
-        <td>${escapeHtml(row.manager)}</td>
         <td>${row.excluded ? escapeHtml(row.regular) : row.regularTeams.map((team) => teamPageLink(team, "inline-team-link")).join(" / ")}</td>
       </tr>
     `).join("");
