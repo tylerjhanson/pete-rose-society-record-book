@@ -413,7 +413,6 @@
 
   window.addEventListener("hashchange", routeFromHash);
 
-  let recordLimit = 50;
   const recordSearch = $("#record-search");
   const recordStatus = $("#record-status-select");
 
@@ -429,9 +428,8 @@
 
   function renderRecords() {
     const records = getFilteredRecords();
-    const visible = records.slice(0, recordLimit);
     $("#record-result-count").textContent = `${records.length} result${records.length === 1 ? "" : "s"}`;
-    $("#record-table-body").innerHTML = visible.map((record) => {
+    $("#record-table-body").innerHTML = records.map((record) => {
       const name = displayName(record.team);
       return `
         <tr>
@@ -449,19 +447,10 @@
         </tr>
       `;
     }).join("") || `<tr><td colspan="8" class="empty-state">No records match this search.</td></tr>`;
-    $("#show-more-records").hidden = visible.length >= records.length;
   }
 
   [recordSearch, recordStatus].forEach((control) => {
-    control.addEventListener(control === recordSearch ? "input" : "change", () => {
-      recordLimit = 50;
-      renderRecords();
-    });
-  });
-
-  $("#show-more-records").addEventListener("click", () => {
-    recordLimit += 50;
-    renderRecords();
+    control.addEventListener(control === recordSearch ? "input" : "change", renderRecords);
   });
 
   setStaticSummary();
