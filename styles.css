@@ -715,3 +715,40 @@ input:focus, select:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgb
   .season-panel .table-wrap,
   .franchise-table-panel .table-wrap { margin-top: 2px; }
 }
+
+
+/* Mobile containment and complete primary navigation */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.main-shell,
+.view,
+.panel,
+.section-heading,
+.page-heading {
+  min-width: 0;
+}
+
+.table-wrap {
+  max-width: 100%;
+}
+
+@media (max-width: 680px) {
+  .site-nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .nav-button {
+    min-width: 0;
+    padding: 12px 3px 11px;
+    font-size: clamp(.62rem, 2.7vw, .75rem);
+    letter-spacing: .015em;
+  }
+}
