@@ -664,49 +664,54 @@ input:focus, select:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgb
   outline-offset: -3px;
 }
 
-/* Phone layouts: preserve all columns as labeled, compact row cards. */
+
+/* Compact phone tables */
 @media (max-width: 600px) {
-  .main-shell, .panel, .table-wrap { min-width: 0; }
-  .mobile-cards, .mobile-cards tbody { display: block; width: 100%; }
-  .mobile-cards thead {
-    position: absolute; width: 1px; height: 1px; padding: 0;
-    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  .panel { padding: 14px 10px; }
+  .table-wrap {
+    margin-inline: -2px;
+    padding-inline: 2px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
   }
-  .mobile-cards.sortable-table thead {
-    position: static; display: block; width: auto; height: auto;
-    overflow: visible; clip-path: none; white-space: normal; margin-bottom: 12px;
+  table { width: 100%; font-size: .7rem; }
+  th, td {
+    padding: 6px 5px;
+    font-size: .68rem;
+    line-height: 1.25;
   }
-  .mobile-cards.sortable-table thead tr { display: flex; flex-wrap: wrap; gap: 6px; }
-  .mobile-cards.sortable-table th { padding: 0; border: 0; background: transparent; }
-  .mobile-cards.sortable-table th:not(:has(button)) { display: none; }
-  .mobile-cards .sort-button {
-    min-height: 44px; width: auto; padding: 7px 10px;
-    border: 1px solid var(--line); border-radius: 8px; background: #f3efe7;
-    white-space: normal; text-align: left; font-size: .7rem;
+  th {
+    font-size: .59rem;
+    letter-spacing: .025em;
   }
-  .mobile-cards .sort-button.is-sorted { background: var(--navy); color: white; }
-  .mobile-cards .sort-button.is-sorted::after { color: var(--gold); }
-  .mobile-cards tbody tr {
-    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px 6px; margin: 10px 0; padding: 12px;
-    border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+  .team-cell {
+    min-width: 122px;
+    max-width: 145px;
   }
-  .mobile-cards tbody td {
-    display: block; min-width: 0; padding: 0; border: 0;
-    white-space: normal; text-align: left; overflow-wrap: anywhere;
-    font-size: .88rem; box-shadow: none !important;
+  .team-name, .table-link {
+    font-size: .72rem;
+    line-height: 1.22;
   }
-  .mobile-cards tbody td::before {
-    content: attr(data-label); display: block; margin-bottom: 3px;
-    color: var(--muted); font-size: .62rem; font-weight: 700;
-    letter-spacing: .025em; text-transform: uppercase;
+  .manager-name {
+    margin-top: 2px;
+    font-size: .59rem;
+    line-height: 1.2;
   }
-  .mobile-cards tbody td.mobile-wide { grid-column: 1 / -1; }
-  .mobile-cards tbody td.team-cell { min-width: 0; }
-  .mobile-cards .team-name, .mobile-cards .table-link { line-height: 1.35; }
-  .mobile-cards .badge { white-space: normal; margin: 2px 2px 2px 0; }
-  .mobile-cards tbody tr.row-regular-champ { border-left: 4px solid var(--gold); }
-  .mobile-cards tbody tr.row-playoff { border-left: 4px solid var(--red); }
-  .mobile-cards tbody tr.excluded-row { background: #f3efe7; }
-  .mobile-cards .excluded-row td { background: transparent; }
+  .num { min-width: 34px; }
+  .badge {
+    min-height: 19px;
+    padding: 2px 5px;
+    font-size: .57rem;
+    line-height: 1.15;
+    white-space: normal;
+  }
+  .sort-button {
+    gap: 3px;
+    font-size: inherit;
+  }
+  .sort-button::after { font-size: .72rem; }
+  .season-panel .table-wrap,
+  .franchise-table-panel .table-wrap { margin-top: 2px; }
 }
